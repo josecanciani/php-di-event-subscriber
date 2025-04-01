@@ -1,6 +1,6 @@
 # php-di-event-subscriber
 
-An Event Subscriber based on Symphony whose listeners are added using PHP-DI
+An Event Subscriber based on Symphony whose listeners are added using PHP-DI.
 
 ## Why?
 
@@ -27,7 +27,7 @@ We take advante of the `DI\decorate` method to intercept the creation of an `Eve
 
 We use Symphony EventDispatcher components as our base. So creating an event is just extending the `Event` class:
 
-Let's say we have this listener:
+Let's say we have this Event:
 
 ```php
 namespace MyApp\Order\Events;
@@ -41,18 +41,28 @@ class OrderCreated extends Event {
 
 ### Dispatching the Event
 
-We create the Event with their details, and then call our `Dispatcher` to dispatch it:
+We instantiate Events using PHP-DI's `make` method. This will produce a new instance of the Event class.
+Then we fill the Event with some data and we call our `Dispatcher` to trigger/dispatch it:
 
 ```php
 use Josecanciani\EventSubscriber\Dispatcher;
 use MyApp\Order\Events\OrderCreated;
 
-/** @var \DI\Container $container */
-$event = $container->make(OrderCreated::class);
-$event->orderId = 1234567890;
+class OrderDao {
+    public function __construct(Dispatcher $dispatcher, Container $container) {
+        $this->dispatcher = $dispatcher;
+        $this->container = $container;
+    }
 
-$dispatcher = $container->get(Dispatcher::class);
-$dispatcher->dispatch($event);
+    public function save() {
+        $event = $this->container->make(OrderCreated::class);
+        $event->orderId = 1234567890;
+
+        $dispatcher = $this->dispatcher->get(Dispatcher::class);
+        $dispatcher->dispatch($event);
+    }
+}
+
 ```
 
 ### Listening / Subscribing an Event
@@ -76,7 +86,6 @@ class MyListener {
 
 And second, register the listener the the module's `definitions.php` file:
 
-
 ```php
 use Josecanciani\EventSubscriber\Dispatcher;
 use DI\Container;
@@ -94,12 +103,13 @@ return [
 ];
 ```
 
-That's it!
-
+That's it! Whenever the `OrderCreated` event is instantiated (with the `make()` method above), this decorator will register the listeners in the dispatcher. Like magic!
 
 ## Limitations
 
-Only `callable` objects are supported as listeners. This is because we need to avoid registering the same listeners multiple times (in case the same process run a `make()` on the same listener multiple times. The Symphony Event Dispatcher also supports string and array callbacks, but we need to get a unique identifier, so an object is easier for it. It also helps with modularization, as you can encapsulate the logic in one place and reference follow it in the IDE with ease.
+Only `callable` objects are supported as listeners. This is because we need to avoid registering the same listeners multiple times (in case the code calls the `make()` method more than once for the same event type). The Symphony Event Dispatcher supports string and array callbacks too, but we need to get a unique identifier of the listener to avoid registering it twice. And a callable object is easy to get the `spl_object_id` identification.
+
+This limitiation helps with modularization as you can encapsulate the listener logic into one place, and you IDE can easily follow class references to navigate them.
 
 ## Roadmap
 
