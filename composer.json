@@ -1,0 +1,48 @@
+{
+    "name": "josecanciani/php-di-event-subscriber",
+    "description": "An Event Subscriber based on Symphony whose listeners are added using PHP-DI",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Josecanciani\\EventSubscriber\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Josecanciani\\EventSubscriber\\Tests\\": "tests/"
+        },
+        "files": [
+            "tests/bootstrap.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Jose Canciani",
+            "email": "github@jluis.com.ar"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "symfony/event-dispatcher": "^5.4",
+        "php-di/php-di": "^6.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5",
+        "phpcompatibility/php-compatibility": "^9.3",
+        "phpstan/phpstan": "^1.12"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility"
+        ],
+        "post-update-cmd": [
+            "phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility"
+        ],
+        "test": [
+            "phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.2 ./src ./tests",
+            "phpstan --memory-limit=256M -c.phpstan.neon analyse",
+            "phpunit tests"
+        ]
+    }
+}

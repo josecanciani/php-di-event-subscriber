@@ -1,0 +1,16 @@
+includes:
+  - .phpstan-baseline.neon
+
+parameters:
+  tips:
+    treatPhpDocTypesAsCertain: true
+  level: 9
+  phpVersion: 70200
+  paths:
+    - tests
+  tmpDir: tmp
+  bootstrapFiles:
+    - tests/bootstrap.php
+  excludePaths:
+    analyse:
+      - %currentWorkingDirectory%/vendor
